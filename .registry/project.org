@@ -1,0 +1,34 @@
+* Project Identity
+:PROPERTIES:
+:UREGISTRY_SCHEMA_VERSION: 1
+:ID: system:claude-skills
+:KIND: system
+:SCOPE: project
+:END:
+
+Public (world-tier) Claude Code skills. Generic tooling only: no personal paths, no employer
+
+* Purpose
+
+* Default Usage Guidance
+
+* Key Capabilities
+
+* Important Components
+
+* Inputs and Outputs
+** Inputs
+** Outputs
+** Streams / Artifacts
+
+* Conventions
+** Preferred Tools
+** Preferred Formats
+** Logging / Monitoring
+** Storage
+
+* Important Paths
+
+* How To Query This Project
+
+* Relationships

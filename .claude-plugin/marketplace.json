@@ -1,0 +1,11 @@
+{
+  "name": "claude-skills",
+  "owner": { "name": "Forrest Chang" },
+  "plugins": [
+    {
+      "name": "lean-coordinator",
+      "source": "./plugins/lean-coordinator",
+      "description": "Model-tier coordinator discipline for Claude Code: fable-lean and opus-lean."
+    }
+  ]
+}

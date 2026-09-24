@@ -1,0 +1,7 @@
+{
+  "name": "lean-coordinator",
+  "version": "0.1.0",
+  "description": "Model-tier coordinator discipline: keep the frontier main thread lean, delegate by rigor, tune effort, escalate on evidence.",
+  "author": { "name": "Forrest Chang" },
+  "license": "MIT"
+}

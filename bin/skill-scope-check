@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# skill-scope-check [DIR] — fail if anything under DIR (default: .) leaks personal or
+# employer-specific references into this public, world-tier repo.
+#
+# Always checks for absolute home paths. Add your own private terms, one extended regex
+# per line (# comments allowed), in $SKILL_SCOPE_DENY_FILE or ~/.config/claude-skills/deny.txt.
+# That file lives outside the repo so the deny-list doesn't publish the words it protects.
+DIR="${1:-.}"
+DENY_FILE="${SKILL_SCOPE_DENY_FILE:-$HOME/.config/claude-skills/deny.txt}"
+PATTERN='/Users/[A-Za-z]|/home/[A-Za-z]'
+if [ -f "$DENY_FILE" ]; then
+  EXTRA=$(grep -vE '^\s*(#|$)' "$DENY_FILE" | paste -sd'|' -)
+  [ -n "$EXTRA" ] && PATTERN="$PATTERN|$EXTRA"
+else
+  echo "note: no deny file at $DENY_FILE; checking home paths only" >&2
+fi
+HITS=$(grep -rniE --exclude-dir=.git "$PATTERN" "$DIR" 2>/dev/null)
+if [ -n "$HITS" ]; then echo "BLOCKED: world-tier leaks in $DIR:"; echo "$HITS"; exit 1; fi
+echo "clean for world tier: $DIR"
