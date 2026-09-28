@@ -26,6 +26,32 @@ Must:
   489k peak context, $22.11 API-equivalent for one 15s reel).
 - Never fire for Forrest's other (non-motion) Claude Code sessions.
 
+## Forward finding from task 03 (motion-studio) — read before building
+
+Task 03 already built the marker format and the measurement logic; task 04 must
+reuse them, not reimplement:
+
+- **Marker detection**: walk up from the hook input's `cwd` looking for a file
+  named `.motion-skills` (schema documented in
+  `plugins/motion-skills/skills/motion-studio/SKILL.md` and written by
+  `plugins/motion-skills/skills/motion-studio/scripts/scaffold.mjs`). None found
+  anywhere up the tree → exit silently, exit 0.
+- **Measurement**: do NOT re-derive token/call counting. Call
+  `node plugins/motion-skills/skills/motion-studio/scripts/spend-gate.mjs --json --transcript <transcript_path> [--overlay <path>]`
+  and read its `verdict` (`OK` | `WARN` | `OVER` | `UNKNOWN`) and `rows` (metrics:
+  `calls`, `output_tokens`, `peak_context`, `cache_read_tokens`, `active_minutes`).
+  Exit codes: 0 OK/UNKNOWN, 3 WARN, 4 OVER (per task 03's evidence).
+- **Thresholds**: come from `budget.warn` / `budget.stop` in
+  `~/.claude/motion-overlay.md` (schema in `motion-overlay.example.md`, same
+  directory) — NOT hardcoded in the hook. If the overlay doesn't exist or has no
+  thresholds set, `spend-gate.mjs` returns `UNKNOWN` (numbers only, no verdict);
+  the hook should stay silent in that case too (nothing to warn against yet),
+  not treat `UNKNOWN` as an error.
+- The hook itself should be thin: marker walk, then shell out to
+  `spend-gate.mjs`, then format its stdout as the Stop hook's warning message if
+  verdict is WARN/OVER. All the actual measurement logic already exists and is
+  gated — don't duplicate it.
+
 ## Acceptance criteria
 
 1. Fires the correct warning when run against the fixture transcript at/past the
