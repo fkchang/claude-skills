@@ -360,3 +360,111 @@ Still true, same as always: whether it actually *sounds* like thunder is not
 something I can verify — that's Forrest's ear, same limit the toolkit's own
 "model can't watch/hear" gotcha names. Bringing this to him now.
 
+### Sound revision v3 (builder, 2026-09-28): analysis-informed synthesis; audio only
+
+Forrest's notes on v2: the thunder still didn't sound like thunder, and the chisel ticks sounded like typing.
+
+**1. References** (`/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/reference-audio/`; README marks it analysis input only, never shipped):
+
+- Six Freesound recordings, all CC0 1.0, license checked on each sound's page on 2026-09-28. They are the HQ previews (128 kbps MP3, 48 kHz); originals need a login.
+- `SHA256SUMS` pins them. The README has the URL, author and use of each.
+- Thunder, used: 744723 (Emulius) and 476739 (elmoustachio).
+- Thunder, measured but unused: 683420, which is almost pure sub and looks pre-filtered.
+- Chisel, used: 841053 (quarry chisel strikes) and 812116 (stonemason mallet).
+- Chisel, measured but unused: 487084, which is scraping (13-135 ms attacks), not strikes.
+- Nothing in `src/`, `render.mjs` or `index.html` reads that directory (grep-verified).
+
+**2. What the measurements showed** (`tools/analyze_audio.py`, numpy STFT, 5 bands, 50 ms hop):
+
+- **Thunder band balance.** Relative to the loudest band: sub -4.1, low (80-250) 0, lowmid (250-1k) -2.5, mid (1-4k) -16.3, high (4-16k) -41.2 dB. The real energy sits in 80 Hz-1 kHz; v2 had lowmid about 15 dB too low.
+- **Thunder onset.** A 30-165 ms swell with a transient centroid of 140-340 Hz. There is **no bright crack** in the references, so v1/v2's 2.4 kHz crack was a synth cliché.
+- **Thunder envelope.** A plateau, a drop around 0.4 s, and re-swells near 1.0 and 1.3 s, falling only about 11 dB/s. Frame-to-frame flicker is 2-3.3 dB std.
+- **Chisel strike** (median of 6 quarry strikes):
+  - attack 2.6 ms (range 1-3.6);
+  - transient centroid 3364 Hz, ring centroid 3256 Hz;
+  - broadband decay -67.6 dB/s;
+  - inharmonic ring partials 2285, 4359, 4931, 6855 and 8191 Hz, about 15 dB above the local floor, decaying at 23-46 dB/s;
+  - mallet body at 498 Hz (stonemason).
+- **Why v2's tick read as typing.** It decayed at about 2300 dB/s and had no ring partials.
+
+**3. Synthesis from the measured numbers** (`src/sting-audio.js`):
+
+- **Thunder:** one noise layer per measured band, through 48 dB/oct band filters. Its gain follows the measured 150 ms band envelope from `src/sting-audio-targets.js`, plus measured-std flicker at 20 Hz, with the measured 30 ms onset ramp.
+- **Chisel:** the measured transient (bandpass near the centroid, measured attack, a decay derived from -67.6 dB/s), plus a 4 ms impact spike, plus sine partials at the measured frequencies and decay rates (±4% detune per character), plus the 498 Hz mallet.
+- **Calibration:** fit offsets live in `src/sting-audio-cal.js`. `tools/fit_audio.py` fits the band offsets and master loudness, with 2 iterations converged. `tools/fit_chisel.py` grid-fits the chisel levels on an isolated-strike test render (`strikeTest=1`), because overlapping strikes contaminate the attack and decay metrics.
+- **Unchanged:** the held breath (true silence from 1.80 s, below -60 dB from 1.77 s), the hit at 2.00 s, and the ticks on the `T` beats.
+
+**4. Quantitative comparison, synth vs target** (`/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/audio-compare.json`; plot `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/audio-compare.png`):
+
+| Thunder band | target total | synth total | curve RMSE | pre-fade slope target / synth (dB/s) | flicker std target / synth |
+|---|---|---|---|---|---|
+| sub | -4.1 | -4.1 | 4.5 dB | -11.0 / -9.5 | 3.32 / 3.98 |
+| low | 0.0 | 0.0 | 3.4 dB | -12.2 / -11.9 | 2.55 / 2.02 |
+| lowmid | -2.5 | -2.5 | 2.9 dB | -11.1 / -10.4 | 2.36 / 1.90 |
+| mid | -16.3 | -15.7 | 2.7 dB | -12.6 / -10.4 | 2.14 / 2.49 |
+| high | -41.2 | -40.7 | n/a | -1.9 / -11.7 | 1.21 / 1.94 |
+
+- The high band's target is the reference recording's noise floor, 41 dB down, so it isn't meaningful.
+- The plot shows the synth tracking the reference target's drop at about 0.4 s and its re-swell near 1.3 s in every band.
+- Thunder onset: attack 28.3 ms against the 30.2 ms target. Onset centroid 208 Hz against 343 Hz, so the first 25 ms is darker than the reference; this is a known gap.
+
+| Chisel strike (isolated) | target (quarry median) | synth (median of 4) |
+|---|---|---|
+| attack 10-90% | 2.6 ms (range 1.0-3.6) | 1.2 ms (0.67-2.23) |
+| transient centroid | 3364 Hz | 3180 Hz |
+| ring centroid | 3256 Hz | 3386 Hz |
+| broadband decay | -67.6 dB/s | -71.2 dB/s |
+| ring-peak prominence | about 15 dB | 15.5 dB |
+| ring partials | 2285 / 4359 / 4931 / 6855 / 8191 Hz | detected at 4406-5271 and 6647-6932 Hz (±4% detune), plus the 483-513 Hz mallet |
+
+- Spectrograms: `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/spectrogram-v2-vs-v3.png`. v3 spreads its energy up to about 1 kHz with visible swells, and the strikes ring across 1-8 kHz over a 500 Hz body.
+- **Known artifact:** the 5-band resynthesis shows hard steps at the 1 kHz and 4 kHz band edges, where the reference spectrum is smooth. If Forrest hears a "filtered" quality, the next step is more, narrower bands.
+
+**Levels.** Chisel max momentary is -36.4 LUFS against the thunder's -17.2, about 19 LU under.
+
+**Deliveries re-verified** (video re-muxed from the same approved masters):
+
+| file | integrated | true peak | frames | onsets (-60 dB) | profile |
+|---|---|---|---|---|---|
+| 16x9 | -23.0 LUFS | -7.3 dBFS | 120 | 0.799, 2.003 | h264 High, bt709, AAC-LC, 4.000 s |
+| 9x16 | -23.0 LUFS | -7.3 dBFS | 120 | 0.800, 2.003 | same |
+| 1x1 | -23.0 LUFS | -7.3 dBFS | 120 | 0.800, 2.003 | same |
+
+- The ring now bridges the gaps between strikes, so silencedetect sees one run from 0.80 s.
+- `npm test`: all three sting safe-zone checks ok.
+
+**Not gated:** whether it sounds like thunder and like a chisel on stone is Forrest's call. The curves prove the measured match, not the character.
+
+**Handoff:**
+
+- Play `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4` on headphones and on a phone speaker.
+- If it's still off: change the references or the rules in `tools/derive_targets.py`, then re-run `derive_targets.py`, `fit_chisel.py` and `fit_audio.py 2`, then re-encode.
+- v1 and v2 are kept for A/B: `out/thunder-v1.wav`, `out/thunder-v2.wav`, and the `out/sting-audio-v*.js.txt` sources.
+
+### Coordinator verification of v3 (analysis-informed synthesis) (2026-09-28)
+
+- **Provenance:** read `reference-audio/README.md` directly — all six sources
+  are CC0 1.0, with author/URL/date per file, `SHA256SUMS` pinned, and an
+  explicit statement that nothing under `src/`, `render.mjs`, or `index.html`
+  reads that directory (confirmed by design: it's inputs to an offline
+  `derive_targets.py` step, not the render path).
+- **Deliveries:** re-ran `ffprobe`/`ebur128` independently on all three —
+  4.000000s, -23.0 LUFS, -7.3 dBTP on all three. Matches the builder's report.
+  `silencedetect` confirms true silence 1.767-2.003s immediately before the
+  hit.
+- **Quantitative match:** viewed `audio-compare.png` (thunder band energy,
+  reference solid vs. synth dashed, 5 bands over the first 1.9s) directly —
+  the synth visibly tracks the reference's shape closely in sub/low/low-mid/mid,
+  including matching dips and swells at the same times, not just matching
+  average level. High band stays low in both, consistent with the finding that
+  real thunder has no bright crack.
+- **Spectrogram:** `spectrogram-v2-vs-v3.png` — v3 (bottom) shows visible
+  ringing/resonance trails on the four ticks (extending up through ~800-1500Hz
+  and persisting, not an instant click), and real mid-band texture in the
+  thunder body through the decay, both absent in v2 (top). This is a visible,
+  not just numerical, difference in the direction Forrest asked for.
+
+This is a materially more rigorous pass than v1/v2 — real measured targets,
+not guessed DSP constants. Still Forrest's ear for the final call. Bringing
+this to him now.
+
