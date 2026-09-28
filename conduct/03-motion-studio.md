@@ -26,7 +26,7 @@ deliver. It must:
   session, per the handoff's session-economics gotcha — model can't watch/hear
   its own output across a huge single-session build).
 - Read brand kits from `~/.claude/motion-overlay.md` (create this file's expected
-  shape/schema as part of this task if it doesn't exist yet — do NOT put RMV's
+  shape/schema as part of this task if it doesn't exist yet — do NOT put RMW's
   actual brand values in the plugin; those go in the overlay only).
 - Support "template mode": scaffold a new project by copying the versioned
   template directory from task 01.
@@ -113,7 +113,7 @@ brand. The deny file `~/.config/claude-skills/deny.txt` was present and applied.
 `bin/skill-scope-check plugins/motion-skills` (whole dir) reports hits, but only in
 `templates/v1/node_modules/` (playwright's `/home/pwuser` strings), which is gitignored
 (`git check-ignore` confirms) and never shipped. Budget thresholds in the example overlay
-are all `null`; RMV values appear nowhere in the plugin.
+are all `null`; RMW values appear nowhere in the plugin.
 
 ### Criterion 3: `motion-studio` writes the `.motion-skills` marker on scaffold
 
@@ -167,7 +167,7 @@ threshold) plus an unknown-metric warning.
    `scripts/overlay.mjs` `METRICS`. Task 04 derives the numbers from the baseline; they go in
    `~/.claude/motion-overlay.md`, not the hook.
 3. **Task 10 / Forrest.** `~/.claude/motion-overlay.md` does not exist yet. Copy
-   `motion-overlay.example.md` there and fill the RMV brand (palette.paper + exactly three
+   `motion-overlay.example.md` there and fill the RMW brand (palette.paper + exactly three
    inks for the toolkit, every named color in `tokens`) and the budget block; validate with
    `overlay.mjs check`. Until then the spend gate returns UNKNOWN (report-only).
 4. **Not done, outside this task's paths:** the repo `README.md` plugin table doesn't list

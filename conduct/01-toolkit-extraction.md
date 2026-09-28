@@ -27,7 +27,7 @@ Parametrize (currently hardcoded, see for_llms.md "Hardcoded today"): frame size
 RGBA16F accumulation, lossless master → ffmpeg encode, the frame-upload-via-Blob
 fetch trick (gotcha #1 in the handoff).
 
-Also build a second "look" for RMV's mid-century enamel style per
+Also build a second "look" for RMW's mid-century enamel style per
 `docs/motion-plugin.context.md` scope row 1: flat enamel fills, steel gradients,
 fine film grain — as an alternative ink/paint module alongside the riso look, not
 a replacement.
@@ -54,7 +54,7 @@ only).
 3. The mid-century enamel "look" module exists and can be swapped in via the same
    config surface as the riso look.
 4. No showreel-specific brand/personal content leaks into the toolkit (world-tier
-   repo constraint) — RMV brand kit values do NOT belong here (see row 10's
+   repo constraint) — RMW brand kit values do NOT belong here (see row 10's
    overlay file instead).
 
 ## Evidence
