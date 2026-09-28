@@ -145,9 +145,138 @@ Small stays more legible, and large erodes more.
 - **Checked visually:** the characters read at 90px in both variants. `rsvg-convert` renders the masks correctly, and `ruby -w` gives no warnings.
 - **Caveat for later:** some motion or render tools handle SVG masks poorly. If one does, the chips can instead be baked in as field-colored overlays (carbon chips on top) with a small code change.
 
+### Steps 3-5: fonts, overlay, seal sting (Opus builder, 2026-09-28)
+
+**Step 3: fonts.** Downloaded from `github.com/google/fonts` (`ofl/`) into `/Users/fkchang/work/entreprenural_ideas/rmv/motion/fonts/`:
+
+- `barlowcondensed/`: Regular, Medium, SemiBold, Bold, ExtraBold
+- `ibmplexsans/`: `IBMPlexSans[wdth,wght].ttf` + Italic (variable)
+- `sourceserif4/`: `SourceSerif4[opsz,wght].ttf` + Italic (variable)
+
+Each folder has its `OFL.txt` (SIL OFL 1.1, confirmed from the headers). `file` reports all nine as TrueType, and `SHA256SUMS` pins them. Roles come from the inventory: Barlow Condensed display, Plex Sans body, Source Serif 4 editorial.
+
+**Step 4: overlay.** Wrote `~/.claude/motion-overlay.md` to the task-03 schema:
+
+- Brand `rmw` is the default, with the enamel look.
+- Palette: paper carbon `#11110f`, and inks steel `#aaa79f`, ivory `#f7f4ed` and seal red `#A63328` (stack order ink0 to ink2).
+- All seven named tokens are there: carbon, ivory, steel, oxblood, seal_red, cobalt_night `#063b64`, turquoise `#30c9c7`.
+- Also: the fonts with their paths, `logo` pointing at `motion/seal/`, a `sound_logo` line, notes, and the outputs paths.
+- Budget thresholds are null (no measured baseline yet).
+- `node scripts/overlay.mjs check` gives `ok ... (brands: rmw)`, with a warning that no budget thresholds are set. `overlay.mjs brand rmw` round-trips.
+
+**Step 5: sting.**
+
+- **Scaffold:** `scaffold.mjs /Users/fkchang/work/entreprenural_ideas/rmv/motion/sting --brand rmw` applied the RMW palette and look to `src/config.js`. Then `npm install` and `npm test` passed.
+- **How it draws:** `seal/` is a symlink to `../seal`, so the scene parses the approved SVGs at load. There is no redrawn copy of the art (`src/sting.js`: DOMParser to Path2D, with animation hooks keyed on SVG ids).
+- **Brief and beat grid:** in `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/studio.md`. 4.0 s at 120 BPM, 2 bars:
+  - 0 to 2 s: silence while the chop (seal-large) inks in, reading order 鳳 凰 涅 槃.
+  - 2.00 s: the thunder hit. Flash, snap pull-back to the full badge (seal-small), wings spring out, shake.
+  - After that: the clouds fade in, a glint sweeps RMW, and the badge holds.
+- **Sound:** `src/sting-audio.js`, deterministic seeded noise. A high-passed crack plus three crackles, an 85 to 30 Hz sine boom, and a rolling low-passed rumble that decays by about 3.9 s.
+- **Toolkit additions** (logged in the studio.md Decisions as template-v2 candidates): `audio.js` exports `wav`, and `main.js` draws the sting.
+
+**Criterion 2: renders in all three formats.**
+
+- `node render.mjs video preset=<id> mb=4` gave 120 frames each for `youtube-1080p` (24 s), `meta-reels-1080x1920` (18 s) and `proposed-social-1x1` (15 s).
+- `PRESET=<id> ./encode.sh` gave `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4`, `-9x16.mp4` and `-1x1.mp4`.
+- ffprobe on all three: h264 High, yuv420p, bt709 primaries/trc/matrix, 30/1, AAC-LC, duration 4.000000, and 120 decoded frames (`-count_frames`).
+- Sizes: 16:9 is 1920x1080, 9:16 is 1080x1920, 1:1 is 1080x1080.
+- 1:1 uses `proposed-social-1x1`, which the toolkit marks proposed-not-confirmed.
+
+**Criterion 3a: loudness** (`ffmpeg -i <mp4> -af ebur128=peak=true -f null -` on each delivery):
+
+| file | integrated | true peak | onset (silencedetect -60 dB) |
+|---|---|---|---|
+| 16x9 | -23.0 LUFS | -8.3 dBFS | 1.9995 s |
+| 9x16 | -23.0 LUFS | -8.2 dBFS | 1.9989 s |
+| 1x1 | -23.0 LUFS | -8.2 dBFS | 1.9989 s |
+
+- Target, from `social-video-delivery`: -23 LUFS ±0.5, true peak at or below -1 dBTP. All three pass.
+- The first draft measured -17.0 LUFS, so I dropped the master by 6 dB (0.5 to 0.25). No other mix changes.
+- On the WAV, astats over 0 to 1.99 s reads peak -inf dB, so the pre-hit is true digital silence.
+
+**Criterion 3b: safe zone** (`npm test`, which now includes `test/sting-safe-zone.mjs`):
+
+- It reuses the toolkit's `platformPreset` and `assertSafeZone`, with no reimplementation.
+- It checks every frame from 0.45 s to the hit (the close-up chop) and from 2.35 s to the end (the settled badge). Each box is taken at worst case, grown by the shake amplitude and including the wing overshoot.
+- Output:
+  - `youtube-1080p`: 97 frames ok; settled badge 1420x310 at (250,385).
+  - `meta-reels-1080x1920`: 97 frames ok; settled badge 762x166 at (159,877).
+  - `proposed-social-1x1`: 97 frames ok; settled badge 762x166 at (159,457).
+- The 2.00 to 2.35 s pull-back is excluded as motion, not a resting message. A negative control at t=2.1 in 9:16 throws `Outside meta-reels-1080x1920 safe zone: badge`, so the check does detect a violation.
+- Visual overlays: `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/safezone-<preset>.png`, rendered with `reviewPreset=`.
+
+**Review artifacts** (in `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/`):
+
+- `sheet-16x9.png`: 16-frame contact sheet.
+- `still-closeup-16x9.png` and `still-final-16x9.png`: full-res stills.
+- `mp4-frames-<16x9|9x16|1x1>.png`: frames 15/36/57/60/63/75/90/119, pulled from the encoded MP4s.
+
+In my own check, the sheets show the seal inking in reading order, the flash at 2.00 s, a motion-blurred pull-back, and a settled badge whose corrected chop and wings match the approved `seal-full.png`. That is the author's check, not a review.
+
+**Not gated here (per the "no shortcuts" rule; runbook in Handoff):**
+
+- A fresh-reviewer pass (motion-studio phase 5) has not run.
+- Forrest has not approved the style frame or the motion.
+- Nobody has listened to the thunder. The meters prove level and timing, not character.
+- Spend gate: UNKNOWN (no thresholds). A security hook blocked passing this builder's own `--transcript` path, and auto-detect read a different, likely coordinator, transcript. The numbers are logged in studio.md with that caveat.
+
 ## Handoff
 
 **GATE CLEARED (2026-09-28).** Forrest approved the carved-stone pass as final,
 via `compare-chop.png` presented on a StreamWeaver canvas
 (`streamweaver canvas-push rmv-seal`). Verbatim: "I approve." Criterion 1 is
 met. Proceeding to steps 3-5 (fonts, brand-kit overlay, seal sting animation).
+
+### Handoff for steps 3-5 (builder, 2026-09-28): verification runbook
+
+Status stays in_progress until the coordinator verifies.
+
+1. **Re-run the numbers.**
+   - `cd /Users/fkchang/work/entreprenural_ideas/rmv/motion/sting && npm test`: three sting safe-zone lines, all ok.
+   - For each of the three files in `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/`: `ffmpeg -i <f> -af ebur128=peak=true -f null -` should give I = -23.0 and Peak at or below -1.
+   - `ffprobe` should give 4.000 s, h264 High, bt709.
+2. **Show Forrest (human gate, not CLI-provable).**
+   - Play `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4` with sound. Then the 9x16 and 1x1 files.
+   - Stills: `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/sheet-16x9.png`, and `safezone-meta-reels-1080x1920.png` for the vertical.
+3. **Questions for Forrest.**
+   - (a) Does the thunder sound right? It is synthesized, not a recording.
+   - (b) Is the timing right: 2 s of silence, then the hit?
+   - (c) Size in 9:16 and 1:1: the badge settles at 762 px wide (the 90%-of-safe-width cap), leaving a lot of black. A bigger vertical layout would mean a stacked composition, which is a new design decision.
+   - (d) The ivory flash at the hit covers the full frame for about 0.15 s. Is that acceptable?
+4. **Optional:** a fresh Sonnet reviewer with only `studio.md` and the review PNGs (motion-studio phase 5).
+5. **To change something:**
+   - A seal change goes through `ruby /Users/fkchang/work/entreprenural_ideas/rmv/motion/seal/build.rb`, then re-render. The sting reads the new SVGs automatically.
+   - Timing is `T` in `src/sting-layout.js`. Mix is `MIX` in `src/sting-audio.js`.
+   - Render and encode: `node render.mjs video preset=<id> mb=4 out=master-<id>.mkv`, then `PRESET=<id> OUT=... ./encode.sh master=out/master-<id>.mkv audio=out/thunder.wav`, after `node render.mjs audio out=thunder.wav`.
+
+Nothing is committed: `rmv/` is not a git repo.
+
+### Coordinator verification (2026-09-28)
+
+Re-ran the builder's numbers independently rather than trusting the report:
+
+- `ffprobe` on all three delivery files: 4.000000s, correct dims (1920x1080 /
+  1080x1920 / 1080x1080), h264 High + AAC. Confirmed.
+- `ffmpeg -af ebur128=peak=true` on all three: 16:9 gives I=-23.0 LUFS, true
+  peak -8.3 dBFS; 9:16 and 1:1 both -23.0 LUFS / -8.2 dBFS. Matches the
+  builder's table exactly. Well inside the -23±0.5 LUFS / -1 dBTP targets.
+- `ffmpeg -af silencedetect=noise=-60dB:d=0.1`: silence from 0 to 1.999521s,
+  confirming true digital silence before the 2.0s hit (not just a quiet mix).
+- Viewed `sheet-16x9.png`, `mp4-frames-9x16.png`, `safezone-meta-reels-1080x1920.png`,
+  `still-closeup-16x9.png`, `still-final-16x9.png` directly: chop inks in
+  4/凰/涅/槃 in order, flash at 2.00s, pull-back to the settled badge with the
+  corrected carved-stone chop and wings extended, matches the approved
+  `seal-full.png`. Every sampled frame stays inside the safe-zone rectangle in
+  both the close-up and settled phases.
+- Confirmed `plugins/motion-skills/templates/` in `claude-skills` is untouched
+  (`git status`/`git diff --stat` clean) — the builder's toolkit-candidate
+  changes (`audio.js` wav export, sting wiring in `main.js`) live only in its
+  own scaffolded copy under `rmv/motion/sting/`, not the shared world-tier
+  template. Correctly left as a proposal in `studio.md`, not applied upstream.
+
+**Not verifiable by the coordinator either** (same "model can't watch video or
+hear audio" limit the toolkit itself documents): whether the synthesized
+thunder actually sounds right, and whether the motion timing/feel lands. That
+is Forrest's call — see Handoff.
+
