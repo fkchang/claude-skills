@@ -48,7 +48,7 @@ choreography-specific, not a toolkit gap to fill here.
 |---|---|---|
 | 1 | Squash and stretch | Preserve area (`sx = 1/sy`) and stretch along velocity (`stretch(vx, vy)` gives `rot = atan2(vy, vx) - pi/2`), capped near +60%. On a landing, squash amplitude falls off with distance from the contact point and the change (e.g. a word swap, a color change) happens at the deepest squash, where it's hidden by the extremity of the pose |
 | 2 | Anticipation | A slow counter-move opposite the coming action (`E.inOutCubic` into a crouch/lean-back), a growing tremble, then stillness for the last sixteenth before the release lands on a downbeat. The pause reads as held breath only if the motion before it decelerates into it |
-| 3 | Staging | One clear read at a time: darken everything but the subject, bring up a "light" cue on a hit, then iris or push the camera onto what matters. Compete for attention with only one moving thing per beat |
+| 3 | Staging | One clear read at a time: darken everything but the subject, bring up a "light" cue on a hit, then circle-wipe closed or push the camera onto what matters. Compete for attention with only one moving thing per beat |
 | 4 | Straight ahead and pose to pose | Pop hard keys on the grid (e.g. sixteenths 1, 9, and a breakdown key at 5), let `E.inOutCubic`/`spring` fill the inbetweens with parabolic spacing, then step the result at a fixed low frame rate (e.g. 24) over part of the beat so it reads like a pencil test cut against the smooth motion around it |
 | 5 | Follow through and overlapping action | Trailing elements (letters, a cape, a tail) each run their own damped spring toward a rest offset from the primary mover, looser (lower frequency, higher damping) the further back they are. Clamp so a trailing element can't overtake the one ahead of it. Lean/skew comes from acceleration, not velocity, so the trail whips on a stop, not just on a move. A single coupled spring chain is unstable at speed — independent per-element springs plus a clamp is stable and reads the same |
 | 6 | Slow in and slow out | Parameterize the path by arc length, then ease *time* along that length (not position directly), so spacing bunches near both ends of the move and opens in the middle. Dropping evenly-spaced "onion skin" copies of the mover makes the bunching visible for review |
@@ -61,7 +61,7 @@ choreography-specific, not a toolkit gap to fill here.
 
 ## Transitions that carry a subject across a cut
 
-Whip pan (heavy motion blur while content moves under it), iris in/out, exit one
+Whip pan (heavy motion blur while content moves under it), exit one
 side and enter the other on a downbeat, match position (subject holds screen
 position while the world changes around it), a disc wipe, a collapse to a point,
 a hard pop, and a morph (one form shrinks/reshapes into the next). Any camera move

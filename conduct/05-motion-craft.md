@@ -63,6 +63,34 @@ $ rg -n -i 'redux|motor works|/users/|/Users/fkchang|cultiv-os|agent_experiments
 (no matches, exit 1)
 ```
 
+**Coordinator note (2026-09-28):** the builder's ad-hoc `rg` pattern above missed
+the repo's own deny list. Running the canonical tool caught a real collision:
+
+```text
+$ bin/skill-scope-check plugins/motion-skills/skills
+BLOCKED: world-tier leaks in plugins/motion-skills/skills:
+motion-craft/SKILL.md:51: ... then iris or push the camera onto what matters ...
+motion-craft/SKILL.md:64: Whip pan (...), iris in/out, exit one
+```
+
+`~/.config/claude-skills/deny.txt` has `\biris\b` (Forrest's personal Telegram
+agent, per the `consult` skill) — a false-positive collision with the standard
+cinematography term "iris in/out" (a circular wipe), unrelated to that agent.
+Reworded both instances to "circle-wipe closed" / dropped the redundant mention
+(the same sentence already names "a disc wipe" for the same technique) rather
+than keep a permanent false positive in a file every future scope-check run
+would re-flag:
+
+```text
+$ bin/skill-scope-check plugins/motion-skills/skills
+clean for world tier: plugins/motion-skills/skills
+exit=0
+```
+
+Process learning for future builders: use `bin/skill-scope-check`, the repo's
+actual gate, not a hand-rolled `rg` pattern — it's the only one that reads the
+real deny list.
+
 ### Criterion 1 — clean-room agent applies three principles from the skill alone
 
 **Not self-verifiable by this builder** (would need a fresh agent isolated from
