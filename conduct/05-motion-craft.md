@@ -1,6 +1,6 @@
 # 05 — motion-craft skill
 
-Status: built-awaiting-gate
+Status: done
 Lane session: run together with 06, 07, 08 in one warmed Sonnet session
 (shared LANE — same knowledge-base reads, avoid 4x cold-start cost)
 
@@ -93,8 +93,26 @@ real deny list.
 
 ### Criterion 1 — clean-room agent applies three principles from the skill alone
 
-**Not self-verifiable by this builder** (would need a fresh agent isolated from
-this conversation and this worktree's other docs). Left ungated — see Handoff.
+**Coordinator gate run (2026-09-28).** Spawned a fresh agent given ONLY the
+final `SKILL.md` text (no toolkit source, no knowledge-base docs, no this
+ledger) with the runbook's exact prompt. Full response on file; scored against
+the rubric:
+
+- **Anticipation** — PASS: counter-move (`E.inOutCubic` into a lean-back) plus a
+  growing tremble (`hash`/`noise1`), decelerating into stillness for the last
+  sixteenth before the downbeat release.
+- **Follow-through** — PASS: primary arrival on `spring(time, frequency,
+  damping)`; trailing sub-elements each get their own independent spring,
+  looser/higher-damping further back, with a no-overtake clamp; lean driven by
+  acceleration not velocity.
+- **Arcs** — PASS: travel angle driven around a pivot with
+  `E.inOutCubic`/`inOutSine` easing (curved path, not a straight line); any
+  camera move during the phase stays centred on the same pivot.
+- **Real toolkit exports only** — PASS: named `createTimeline`/`at()`,
+  `E.inOutCubic`, `hash`/`noise1`, `stretch(vx, vy)`, `spring()` — all real
+  exports from the skill text, nothing invented.
+
+4/4 (rubric asked for 3/3). Criterion confirmed. Status → done.
 
 ## Handoff
 
