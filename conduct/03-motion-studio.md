@@ -7,9 +7,9 @@ Depends on: 01, 02 (toolkit + presets must exist first)
 
 RIGOR: strict
 LANE: skills
-Builder: Opus (per handoff — coordinator is running as Sonnet 5 this session,
-so this is an escalation above the coordinator's own tier; BLOCKED pending
-Forrest's go-ahead per the "ask before escalating above own tier" rule)
+Builder: Opus (per handoff; coordinator is running as Sonnet 5 this session, so
+this is an escalation above the coordinator's own tier — approved by Forrest
+2026-09-28)
 
 Build `motion-studio`, the composite skill in `plugins/motion-skills/skills/
 motion-studio/SKILL.md` (plus any supporting scripts) that governs the whole

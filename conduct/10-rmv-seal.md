@@ -10,7 +10,7 @@ populates RMV's actual values there — NOT in the plugin).
 RIGOR: strict (gate: Forrest approves the seal before it animates)
 LANE: rmv
 Builder: Opus (per handoff — visual judgment; escalation above coordinator's own
-Sonnet tier, BLOCKED pending Forrest's go-ahead)
+Sonnet tier — approved by Forrest 2026-09-28)
 
 Steps (from `~/work/agent_experiments/showreel/docs/motion-plugin.context.md`
 scope row 10 and the "RMV brand kit status" section):
