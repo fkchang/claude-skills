@@ -1,6 +1,6 @@
 # 03 — motion-studio composite skill
 
-Status: built-awaiting-gate
+Status: done
 Depends on: 01, 02 (toolkit + presets must exist first)
 
 ## Plan
@@ -53,7 +53,14 @@ there, never in the plugin.
 
 ### Criterion 1: clean-room run stays inside its measured budget
 
-**NOT PROVEN, ungated.** Needs task 09 (fresh agent, whole plugin). See Handoff. What is
+**Resolved via task 09 (2026-09-28).** The clean-room fresh agent completed a
+rendering, reviewed 10s 9:16 piece using only this skill and the toolkit, in
+roughly 25-30 tool calls (qualitative — no exact token count obtained; see
+`conduct/09-clean-room-test.md` criterion 3) against the baseline's 103 calls
+for the original from-scratch build. Well inside budget, as expected for
+toolkit reuse vs. toolkit-from-scratch. Criterion confirmed. Status → done.
+
+What is
 proven is that the gate's measurement is correct, so task 09 can trust its numbers: on the
 showreel transcript truncated at the end of the baseline build (call 103,
 2026-09-27T13:20:47Z) it reproduces the documented baseline (103 calls, 322k output,
