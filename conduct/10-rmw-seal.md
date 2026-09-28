@@ -280,3 +280,83 @@ hear audio" limit the toolkit itself documents): whether the synthesized
 thunder actually sounds right, and whether the motion timing/feel lands. That
 is Forrest's call — see Handoff.
 
+### Sound revision v2 (builder, 2026-09-28): audio only; motion, framing and seal untouched
+
+Forrest approved the motion, timing and framing. Two sound notes: the thunder sounded like "the rattle of beads," and the 0-2 s phase should not be dead silence.
+
+**What changed** (`/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/src/sting-audio.js`; v1 is kept as `out/thunder-v1.wav` and `out/sting-audio-v1.js.txt`):
+
+1. **Thunder.**
+   - The three discrete high-passed crackle bursts (the beads) are gone.
+   - Now: one wideband crack (bandpass 2.4 kHz, Q 0.6, 1 ms attack, about 30 ms decay).
+   - The roll: 8 independent noise bursts, each through two cascaded low-pass stages with cutoffs of 40-150 Hz (biased low). Onsets are staggered over 50-450 ms, with 40-250 ms swells and exponential tails (time constant decay/3, decay 1.0-2.4 s).
+   - A quieter 90-320 Hz body layer, so the roll survives phone speakers.
+   - A 70 to 28 Hz sub boom.
+   - The master fades over the last 0.3 s, ending at 3.92 s.
+2. **Chisel ticks.**
+   - One per character, on the exact `T` beats (`T.charStart + i * T.charStagger`: 0.80, 1.02, 1.24, 1.46 s).
+   - Each is a bandpassed 3.8 kHz stone tick, a faint high scrape, and a short 190-265 Hz knock.
+3. **Held breath.** I kept true silence from 1.80 s (the start of the anticipation push) to the hit, so the last 200 ms is dead air before the thunder. It is 430 ms below -60 dB. My reasoning: silence makes the hit land harder, and the ticks already carry the anticipation.
+
+**Objective checks** (the `out/measure.sh` script, run on the WAV):
+
+| Metric | v1 | v2 |
+|---|---|---|
+| RMS above 1.5 kHz, 2.05-2.60 s (the "beads" zone) | -41.9 dB | -59.8 dB |
+| Thunder band RMS 2.00-3.95 s: sub under 80 / 80-250 / 250-1.5k / over 1.5k | -33.9 / -31.9 / -45.6 / -42.2 | -27.6 / -30.0 / -45.6 / -53.0 |
+
+- **Low band (under 250 Hz), RMS per 150 ms from 2.00 s:**
+  - v1: -18, -26, -33, -39, -43, -46 ... -67. A single clean decay.
+  - v2: -15, -22, -26, -27, -29, -32, -35, -38, -40, -42, -45, -50, -63. It swells and holds from 2.3 to 3.2 s, which is the roll.
+- **Spectrograms:** `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/spectrogram-v1-vs-v2.png`. v1 (top) shows three broadband crackle stripes after the hit. v2 (bottom) shows one crack line and energy concentrated and sustained under 150 Hz, plus four thin tick lines before the hit.
+- **Chisel level:** max momentary -43.3 LUFS, against the thunder's -18.6. That is about 25 LU under, so it is texture, not an event. Tick peak is -22.6 dBFS. I first had the ticks at -49 LUFS (30 LU under) and raised them 6 dB so they stay audible on a phone.
+
+**Re-verified per delivery** (video re-muxed from the same approved masters; no motion change):
+
+| file | integrated | true peak | frames | onsets (silencedetect -60 dB, 0.1 s) |
+|---|---|---|---|---|
+| 16x9 | -23.0 LUFS | -9.1 dBFS | 120 | 0.799, 1.021, 1.241, 1.461, 2.000 |
+| 9x16 | -23.0 LUFS | -9.2 dBFS | 120 | 0.800, 1.021, 1.241, 1.461, 2.000 |
+| 1x1 | -23.0 LUFS | -9.2 dBFS | 120 | 0.800, 1.021, 1.241, 1.461, 2.000 |
+
+- ffprobe on all three: h264 High, yuv420p, bt709, 30/1, and 4.000 s.
+- `npm test`: all three sting safe-zone checks ok, unchanged.
+
+**Not gated:** whether this sounds like thunder, and whether the ticks read as chisel, is Forrest's call. The meters prove spectral balance, envelope shape, level and timing, not character.
+
+**Handoff:**
+
+- Play `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4` with sound, ideally on both headphones and a phone speaker.
+- Questions for Forrest:
+  - (a) Does it sound like thunder now?
+  - (b) Is the chisel level right?
+  - (c) Keep the 1.80 to 2.00 s held-breath silence?
+- Tuning knobs are in `MIX` in `src/sting-audio.js`:
+  - `rumble.cutoff` and `rumble.decay` set the roll's weight and length.
+  - `chisel.gain` sets the tick level.
+  - `breathFrom` sets when the held breath starts.
+- To rebuild: `node render.mjs audio out=thunder.wav`, then re-run `encode.sh` per preset with the existing masters.
+
+Status stays in_progress.
+
+### Coordinator verification of the audio revision (2026-09-28)
+
+Re-ran independently rather than trusting the report:
+
+- `ffprobe`/`ebur128` on all three deliveries: 4.000000s, -23.0 LUFS, true peak
+  -9.1/-9.2 dBFS on all three. Matches the builder's table.
+- `ffmpeg silencedetect=noise=-60dB:d=0.1` on 16:9: confirms four short
+  tick-sized non-silent blips at ~0.80/1.02/1.24/1.46s separated by real gaps,
+  then true silence from 1.569 to 2.000s (0.43s held breath) before the hit —
+  satisfies the anticipation/held-breath requirement with margin.
+- Viewed `spectrogram-v1-vs-v2.png` directly: v1 (top) shows three sharp
+  broadband stripes right after the hit — visibly the "beads" Forrest heard.
+  v2 (bottom) replaces them with sustained, low-concentrated energy (under
+  ~150-200Hz) that swells and holds through 2.3-3.2s, plus four short thin
+  tick lines before the hit. This is a real, visible spectral change in the
+  direction requested, not just a level tweak.
+
+Still true, same as always: whether it actually *sounds* like thunder is not
+something I can verify — that's Forrest's ear, same limit the toolkit's own
+"model can't watch/hear" gotcha names. Bringing this to him now.
+
