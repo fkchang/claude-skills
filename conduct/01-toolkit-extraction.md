@@ -1,6 +1,6 @@
 # 01 — Toolkit extraction
 
-Status: built-awaiting-gate
+Status: done
 
 ## Plan
 
@@ -137,9 +137,33 @@ $ node --check render.mjs && for f in src/*.js test/*.mjs; do node --check "$f";
 
 Output: *(no output; exit 0)*
 
-## Handoff
+## Coordinator gate (2026-09-28)
 
-(runbook for anything needing a real render/visual check, if not CLI-provable)
+Ran the handoff runbook on the main thread (headless Chrome works here; it was
+blocked in the builder's sandbox):
+
+- `npm install`, `npm test` — passed, matches builder's evidence.
+- `npm run smoke:sheet` — `out/smoke-sheet.png`: 5-frame contact sheet, riso
+  look. Viewed the image: three-ink separated "MAKE" wordmark, stippled green
+  tint ball, pink ellipse tracing the drawn path with visible plate jitter.
+  Matches expected observation.
+- `node render.mjs sheet ... look=enamel ... name=smoke-enamel-sheet.png` —
+  viewed the image: same geometry, flat enamel pink ellipse (no stipple), a
+  steel-gradient bar in the lower strip. Matches expected observation;
+  confirms criterion 3 (swappable looks) visually, not just via the shader
+  presence check.
+- `npm run smoke:audio`, `node render.mjs video ... out=smoke-master.mkv` —
+  encoded; `ffprobe` confirms the raw master is 320x180 as configured
+  (parametrized size holds through the render path, not just `createConfig`).
+- `master=... audio=... OUT=out/smoke.mp4 ./encode.sh` — delivery encode
+  upscales to the default `youtube-1080p` preset (1920x1080) regardless of the
+  master's size. This is correct, not a defect: encode.sh's job is to hit a
+  platform's canonical delivery size (row 2), not preserve the source master's
+  arbitrary render size.
+
+All four acceptance criteria confirmed with direct observation. Status → done.
+
+## Handoff (builder's original runbook, superseded by the gate above)
 
 From `plugins/motion-skills/templates/v1` on a machine that permits a local
 loopback server and headless Chrome:

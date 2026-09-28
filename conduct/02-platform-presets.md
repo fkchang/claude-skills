@@ -1,6 +1,6 @@
 # 02 — Platform presets and reframing
 
-Status: built-awaiting-gate
+Status: done
 Depends on: 01-toolkit-extraction (same lane, same builder session — do this
 after 01 lands in the toolkit directory)
 
@@ -91,7 +91,20 @@ proposed-social-1x1 -> 1080x1080 via createConfig
 1
 ```
 
-## Handoff
+## Coordinator gate (2026-09-28)
+
+Ran the handoff runbook on the main thread:
+
+`node render.mjs sheet preset=meta-reels-1080x1920 reviewPreset=meta-reels-1080x1920 from=0 to=2 step=.4 cols=3 tw=180 name=reels-review.png`
+
+Viewed `out/reels-review.png`: five 9:16 tiles, dashed yellow safe-zone
+rectangle inset inside the pink crop-risk perimeter on every tile, and the
+headline ("MAKE"), the moving ball, and the drawn path all stay inside the
+dashed rectangle across all five frames. `proposed-social-4x5` and
+`proposed-social-1x1` remain marked proposed-not-confirmed in `presets.js`.
+Matches expected observation. Status → done.
+
+## Handoff (builder's original runbook, superseded by the gate above)
 
 (runbook for the visual safe-zone check if it needs a human eyeball, not just a
 programmatic margin check)
