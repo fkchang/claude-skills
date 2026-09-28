@@ -1,0 +1,16 @@
+{
+  "description": "Budget guard: warns on Stop when a motion-skills session has passed the operator's spend thresholds (silent outside motion work and below threshold).",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/budget-guard.mjs\""
+          }
+        ]
+      }
+    ]
+  }
+}
