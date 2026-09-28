@@ -68,13 +68,18 @@ is only a review layer and is not included in delivery video frames.
 
 ## Run
 
-Install the declared browser dependency, then run:
+Install dependencies, then install Playwright's Chromium binary (the `playwright`
+package alone does not ship a browser — this step is required even after `npm
+install` succeeds cleanly, and rendering will fail at the browser-launch step
+without it):
 
 ```sh
+npm install
+npx playwright install chromium
 npm test
 npm run smoke:sheet
 npm run smoke:audio
-node render.mjs video config=smoke fps=24 mb=4 from=0 to=2 out=smoke-master.mkv
+node render.mjs video fps=24 mb=4 from=0 to=2 out=smoke-master.mkv
 OUT=artifacts/smoke.mp4 ./encode.sh master=out/smoke-master.mkv audio=out/smoke.wav
 ```
 

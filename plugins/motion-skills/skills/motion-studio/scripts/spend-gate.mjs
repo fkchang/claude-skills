@@ -49,6 +49,14 @@ export const REMEDY = {
 };
 
 // Claude Code keys transcripts by the launch directory; walk up so a cd into a subdirectory still finds it.
+// KNOWN LIMITATION (found in the row-9 clean-room test): this walk can reach an ancestor
+// directory whose slugified path happens to collide with an unrelated session's real
+// project slug (observed inside a deeply nested scratch/tmp path whose own directory
+// naming embeds a slug-like segment). The result is auto-detecting a real but unrelated
+// transcript with misleading numbers, not a crash — but always pass --transcript
+// explicitly in any non-interactive or scripted context (hooks already do this). The
+// printed/JSON `transcript` field always names the file actually used, so a caller can
+// audit which one was picked.
 export function findTranscript(cwd = process.cwd()) {
   const projects = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
   for (let dir = path.resolve(cwd); ; dir = path.dirname(dir)) {

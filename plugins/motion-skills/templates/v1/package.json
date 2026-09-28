@@ -6,8 +6,8 @@
   "scripts": {
     "test": "node test/validate.mjs && node test/safe-zone-check.mjs",
     "safe-zone:check": "node test/safe-zone-check.mjs",
-    "smoke:sheet": "node render.mjs sheet config=smoke from=0 to=2 step=0.4 cols=3 tw=160 name=smoke-sheet.png",
-    "smoke:audio": "node render.mjs audio config=smoke out=smoke.wav"
+    "smoke:sheet": "node render.mjs sheet from=0 to=2 step=0.4 cols=3 tw=160 name=smoke-sheet.png",
+    "smoke:audio": "node render.mjs audio out=smoke.wav"
   },
   "dependencies": {
     "playwright": "^1.57.0"

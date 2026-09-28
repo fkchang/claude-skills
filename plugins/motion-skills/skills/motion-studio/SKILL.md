@@ -95,6 +95,9 @@ overlay's `budget.warn` and `budget.stop`. `peak_context` is the largest single 
 input plus cache reads plus cache writes; `active_minutes` sums time between transcript
 entries, skipping gaps of 15 minutes or more as idle. Add `--json` for machines. If other
 sessions run in the same directory, "newest transcript" may be theirs: pass `--transcript`.
+Auto-detection can also, rarely, match an unrelated session via a directory-slug collision
+while walking up parent directories (seen from a deeply nested scratch path) — always pass
+`--transcript` explicitly from a subagent, hook, or any other non-interactive context.
 
 | Verdict | Exit | Do this |
 |---|---|---|
