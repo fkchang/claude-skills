@@ -6,6 +6,11 @@
       "name": "lean-coordinator",
       "source": "./plugins/lean-coordinator",
       "description": "Model-tier coordinator discipline for Claude Code: fable-lean and opus-lean."
+    },
+    {
+      "name": "motion-skills",
+      "source": "./plugins/motion-skills",
+      "description": "Code-driven motion design toolkit and skills: parametrized rendering engine, platform delivery presets, animation-principle recipes, sound, and a budget-guarded studio workflow."
     }
   ]
 }

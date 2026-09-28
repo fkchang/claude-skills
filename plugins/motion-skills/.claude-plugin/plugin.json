@@ -1,0 +1,7 @@
+{
+  "name": "motion-skills",
+  "version": "0.1.0",
+  "description": "Code-driven motion design toolkit and skills: parametrized rendering engine, platform delivery presets, animation-principle recipes, sound, and a budget-guarded studio workflow.",
+  "author": { "name": "Forrest Chang" },
+  "license": "MIT"
+}
