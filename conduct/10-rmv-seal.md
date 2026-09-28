@@ -1,6 +1,11 @@
 # 10 — First RMV piece: seal sting
 
-Status: pending
+Status: in_progress
+Output location (Forrest, 2026-09-28): inside the rmv project, at
+`/Users/fkchang/work/entreprenural_ideas/rmv/motion/` (new directory, sibling
+to `docs/`, `chatgpt_artifacts/`, `prototype/` — no existing `brand/` or
+`motion/` convention there yet). NOT inside `claude-skills` (world-tier) and
+NOT inside `agent_experiments/showreel`.
 Depends on: 01 (toolkit), and Forrest's brand-kit values living in
 `~/.claude/motion-overlay.md` (task 03 defines the overlay schema; this task
 populates RMV's actual values there — NOT in the plugin).
