@@ -1,10 +1,6 @@
 # 10 — First RMW piece: seal sting
 
-Status: in_progress
-Reopened 2026-09-28: Forrest requested two more changes after approving v4 —
-more chisel bass/resonance, and a new closing "sizzle burnaway" reveal into
-the real photographic logo with a short musical motif. See Evidence below for
-the v4-approval record; this addendum starts a new Evidence entry beneath it.
+Status: done
 Output location (Forrest, 2026-09-28): inside the rmv project, at
 `/Users/fkchang/work/entreprenural_ideas/rmv/motion/` (new directory, sibling
 to `docs/`, `chatgpt_artifacts/`, `prototype/` — no existing `brand/` or
@@ -698,3 +694,9 @@ Status stays in_progress.
 
 Bringing this to Forrest now.
 
+
+### Final approval, v5 (2026-09-28)
+
+Forrest: "that's great. Thank you." Approves the burn-away reveal, the pushed
+chisel, the motif, and the loudness normalization to -23 LUFS as final. Row 10
+is done — the whole build (rows 1-10) is complete.
