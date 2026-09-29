@@ -582,3 +582,119 @@ Forrest, on v4: "that will work for now." All three acceptance criteria met
 (render in three formats: confirmed; loudness/safe-zone: confirmed
 independently; Forrest's approval of both the seal art and the sting: given).
 Row 10 is the last task in the build. All ten rows are now done.
+
+### v5 (builder, 2026-09-28): chisel push and sizzle-burnaway ending
+
+The front is untouched: the 0-2 s ink-in, the tick schedule, the 2.00 s hit and the pull-back.
+
+**1. Chisel: more bass and resonance, deliberately past the measurement.**
+
+- `PUSH` in `src/sting-audio.js` is kept separate from the measured `TARGETS`/`CAL`, so the departure from realism is explicit:
+  - body sub/low/lowmid: +9/+8/+4 dB, sustain 1.8x;
+  - partials: +4 dB, ring sustain 1.6x;
+  - mallet: +6 dB.
+- Measured on isolated strikes:
+
+| | 0-150 ms balance sub/low/lowmid/mid/high (dB) | median ring decay | low band (80-250) at 0/50/100/150/200/250 ms |
+|---|---|---|---|
+| quarry reference | -17.2/-4.3/-3.8/-2.7/0 | -23 to -46 dB/s (partials) | decays at -209.5 dB/s |
+| v4 (measured match) | -16.8/-4.8/-4.8/0/-4.4 | -61.3 dB/s | -7.6/0/-8.8/-17.8/-26.3/-35.3 |
+| v5 (pushed) | -10.0/0/-4.6/-6.7/-10.8 | -40.0 dB/s | -9.6/0/-5.1/-10.2/-16.5/-21.8 |
+
+- Chisel max momentary is now 14.8 LU under the thunder (v4: 19 LU). Tick timing is unchanged; steepest-rise onsets land 0.1-8.6 ms after the landing frames.
+
+**2. Sizzle-burnaway ending.** Duration is now 6.0 s (3 bars at 120 BPM); the burn runs 3.40-5.00 s and the photo holds 5.0-6.0 s.
+
+- **Effect:** a procedural output-pass shader added to the project copy of `src/engine.js`, not a crossfade.
+  - The field is 0.68 × distance from the chop (the seal "ignites" the badge) plus 0.32 × 5-octave fbm, plus a small time-varying sizzle term.
+  - A threshold that advances with sine-eased progress reveals the photo layer.
+  - A scorch band darkens the vector ahead of the edge.
+  - A glowing ember line (orange to white-hot) rides the edge.
+  - Everything is limited to the badge silhouette, so no ember crosses empty background.
+- **Photo:** `16-rmw-phoenix-rebirth-brand-identity-board.png`. The deck's `image-12-1.jpg` is a crop of the same board with the badge top cut off, so the board is the cleaner, complete face-on badge.
+  - **Registration was measured, not guessed.** The naive (160, 75) crop had both the photo's red-chop centroid (571.7) and its plate center (571.5) sitting 8.5 px left of the vector's 580; vertical matched (194.3 against 194).
+  - Final mapping: badge (x, y) = board (x + 151.5, y + 75), scale 1.
+  - An edge-correlation search was ambiguous (the wing stripes alias horizontally) and its best score was visibly misregistered, so I rejected it in favor of the landmarks.
+  - Per format, the photo is placed with the same settled camera as the vector (same badge rect per format, already safe-zone-tested) and matted to the vector badge silhouette.
+- **Seal correctness:** the photo carries the AI's original chop (garbled top-left glyph, row order). To keep Forrest's approved seal, the approved carved `seal-small` field, border and characters are composited over it, keeping the photo's own chrome bezel. See `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/final-chop.png`.
+- **Coverage, measured from rendered frames** (`tools/burn_coverage.py`: the share of badge pixels that already match the final photo frame rather than the pre-burn vector frame):
+
+| t (s) | 16:9 | 9:16 | 1:1 |
+|---|---|---|---|
+| 3.6 | 4.3% | 9.1% | 9.0% |
+| 4.0 | 49.4% | 45.9% | 46.9% |
+| 4.4 | 87.7% | 92.4% | 88.2% |
+| 4.8 | 99.7% | 99.8% | 99.8% |
+| 5.0 | 99.9% (ember 0 px) | 99.9% | 99.9% |
+
+- The coverage is front-loaded around 3.8-4.2 s because most badge pixels sit at mid distance from the chop; the slow tail is the wing tips.
+- My first threshold mapping wasted 0.4 s at the start and finished at 4.6 s. I re-mapped it (field on the badge spans about 0.18-0.86).
+- A first attempt produced no burn at all: the photo matte was empty, because `destination-in` applies per draw call. The silhouette is now built in its own canvas and applied once.
+
+**3. Arrival motif.**
+
+- A rising B-major arpeggio, B3/D#4/F#4/B4, at 4.25/4.50/4.75/5.00 s. The last note lands as the burn completes and rings to the end.
+- Additive voice: 4 harmonics with slight stretch, 6 ms attack, exponential decay, low-passed at 3 kHz, sent into the measured thunder-space reverb at -12 dB.
+- **Key rationale:** the chisel's measured mallet resonance, 498 Hz, is B4, so the motif sits in the piece's own pitch.
+- **Level:** max momentary 8.2 LU under the thunder's, restrained. Notes detected in order, each within one narrowband filter's time resolution of schedule.
+
+**Thunder tail:** after the 1.9 s measured envelope, the thunder continues decaying at 30 dB/s instead of the v4 master fade at 3.62-3.92 s. That fade was an artifact of the 4 s length.
+
+**Deliveries** (all re-rendered, 6.0 s):
+
+| file | integrated | true peak | frames | profile |
+|---|---|---|---|---|
+| `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4` | -23.0 LUFS | -3.8 dBFS | 180 | h264 High 1920x1080, bt709, 30/1, AAC-LC, 6.000 s |
+| `-9x16.mp4` | -23.0 LUFS | -3.8 dBFS | 180 | 1080x1920, same |
+| `-1x1.mp4` | -23.0 LUFS | -3.8 dBFS | 180 | 1080x1080, same |
+
+- `npm test`: the sting safe-zone checks now cover 157 frames per format and pass.
+- The held breath (1.90-2.00 s) is still -inf in the WAV.
+
+**Level note for Forrest:** re-normalizing the longer, quieter programme to -23 LUFS makes the whole mix, including the approved front, 2.8 dB louder in absolute level; the balance is unchanged. The alternative is to keep the front's v4 absolute level, which would put integrated loudness at -25.8 LUFS, outside the ±0.5 target.
+
+**Review artifacts** (in `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/`):
+
+- `ending-review-a.png`: 16:9 and 1:1 frames from the MP4s at 3.33/3.70/3.90/4.10/4.30/4.60/5.00/5.97 s.
+- `ending-review-b.png`: 9:16.
+- `midburn-crop.png`: a full-res ember close-up.
+- `final-chop.png`: the corrected chop in the photo.
+- `burn-vertical-square.png`: safe-zone overlay sheets.
+- `burn-coverage.txt`: the coverage data.
+
+**Not gated:** whether the burn reads as convincing sizzle, whether the vector-to-photo registration holds up at speed, and whether the motif sounds right are all Forrest's call.
+
+**Toolkit candidate (not built into the shared toolkit):** the burn-away is a generic transition, an output-pass threshold reveal with a noise field, a scorch band, an ember edge and a next-image layer. It belongs in `motion-craft`'s transitions list or as a template-v2 primitive. It is logged in studio.md Decisions.
+
+Status stays in_progress.
+
+### Coordinator verification of v5 (2026-09-28)
+
+- **Deliveries:** re-ran `ffprobe`/`ebur128` independently on all three —
+  6.000000s, -23.0 LUFS, -3.8 dBTP. Matches the report exactly.
+- **Burn/reveal:** viewed `ending-review-a.png`/`-b.png`, `midburn-crop.png`,
+  and pulled the actual last frame from the 16:9 delivery myself
+  (`ffmpeg -sseof -0.1`). The final frame is genuinely photoreal — real
+  specular chrome highlights and brushed-metal texture the vector art could
+  never produce, exactly the problem Forrest raised. The burn progression
+  reads as fire eating across the badge from the chop outward, contained
+  within the badge silhouette (no stray embers on the background) in both
+  16:9 and 9:16.
+- **Chop correctness in the photo:** viewed `final-chop.png` — the approved
+  carved chop is composited over the photo's original (garbled/wrong-order)
+  chop, grid still correct (涅/鳳 top, 槃/凰 bottom).
+- **Safe zone through the burn:** viewed `burn-vertical-square.png` — badge
+  stays inside the dashed safe-zone rectangle across all 8 sampled times
+  (3.30-5.40s) in both 9:16 and 1:1.
+- **Loudness decision:** the builder's tradeoff is real and their framing is
+  accurate — normalizing the now-longer, quieter programme to -23 LUFS raises
+  the whole mix (including the already-approved front) by a uniform +2.8dB.
+  Since this is a flat gain, not a rebalance, it doesn't change anything
+  Forrest already approved about the front's character, only its absolute
+  level — and -23 LUFS matches the platform target this build has used
+  throughout, where -25.8 LUFS would not. My read: normalize (what's shipped)
+  is the right call unless Forrest specifically wants the front to stay at
+  its exact prior loudness. Flagging for his confirmation regardless.
+
+Bringing this to Forrest now.
+
