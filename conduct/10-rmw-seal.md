@@ -468,3 +468,106 @@ This is a materially more rigorous pass than v1/v2 — real measured targets,
 not guessed DSP constants. Still Forrest's ear for the final call. Bringing
 this to him now.
 
+### Sound revision v4 (builder, 2026-09-28): tick sync, reverb, bass, spectral smoothness; audio only
+
+Forrest's notes on v3: the thunder now sounds like thunder and the chisel direction is right. Three new notes: the tick leads the visual, the thunder reads "8-bit NES", and both sounds need bass and reverb.
+
+**1. Tick sync bug, with root cause.**
+
+- v3 fired each tick at the *start* of its glyph's reveal. The glyphs are only fully inked 219-258 ms later: the reveal is an outQuad wipe, and each glyph's lowest ink sits at 63-69 of the 80-unit wipe.
+- Fix: `charLanded(index, bottom, fps)` in `src/sting-layout.js` returns the first video frame at which the glyph is fully inked. The glyph bottoms are read from `seal-large.svg` at render time (`glyphBottoms()` in `src/sting.js`), and the reveal constants are now shared (`REVEAL`).
+- New tick times: 1.067, 1.300, 1.467 and 1.733 s. Each is 8-25 ms after the geometric landing, erring late as requested.
+- **A second bug the measurement caught.** The first v4 render put the ticks at 1.083, 1.292, 1.500 and 1.750 s: the landing times snapped to a *24 fps* grid. The audio render passes no preset, so it used the template default of fps 24, while every delivery is 30 fps. I changed the project default fps to 30 (`src/config.js`). The video always passed presets, so it is unaffected; `npm test` still passes.
+- Measured tick onsets (first +12 dB crossing on a 2 ms energy envelope):
+  - WAV: -1.0 / -0.1 / +0.4 / -0.3 ms against the landing frame.
+  - MP4s: -5.0 / +0.8 / +1.1 / +0.6 ms. The -5 ms on the first tick is AAC pre-echo coming out of digital silence, not schedule.
+- **Held breath:** now 100 ms (1.90-2.00 s), because the last glyph lands at 1.733 s. The WAV is -inf there; the MP4s are -77 to -91 dB (AAC noise floor).
+
+**2. Reverb, measured then synthesized.**
+
+- `tools/measure_reverb.py` does Schroeder backward integration per octave, with the pre-event noise floor subtracted and the integration truncated where the tail meets the floor (Lundeby-style).
+- **Thunder:** 2 clap tails (744723 at 3.4 s; 476739 at 6.5 s). EDT: 63 Hz 3.48, 125 3.76, 250 2.60, 500 2.65, 1k 2.06 s.
+  - Above 1 kHz the tails are unreliable, so I extrapolated at 0.8x per octave (air absorption): 2k 1.65, 4k 1.32, 8k 1.05.
+  - The one direct 4 kHz measurement, 1.33 s, agrees with the extrapolation.
+  - I used EDT because the thunder's T20 includes continuing rumble.
+- **Chisel:** 12 isolated quarry strikes. The 500 Hz-8 kHz EDT is robust at 0.26-0.51 s (500 Hz: 0.36 s, n=11).
+  - The low bands and late decay are dominated by non-stationary quarry ambience and the steel chisel's own ring, so I held 0.36 s below 500 Hz.
+  - This is a known limitation: room and ring can't be cleanly separated in that recording.
+- **Synthesis** (`reverbIR` in `src/sting-audio.js`): an IR per sound, made of decorrelated stereo noise per octave band, each decaying at its measured T60 (predelay 20 ms for thunder, 8 ms for chisel), energy-normalized, through a ConvolverNode.
+  - It is code-generated, with no sampled IR.
+  - I chose it over a comb/allpass network because it matches the measured per-band T60 exactly and avoids comb-filter metallic coloration, which would itself read as synthetic.
+- **Wet level** is bisected to the measured EDT (`tools/reverb_fit.py`): thunder -10.35 dB (median of 250/500/1k EDT against 2.60 s), chisel -15.38 dB (500 Hz EDT: 0.359 s against 0.36 s).
+
+**3. Bass.**
+
+- **Thunder:** the references' sub band spans -12.1 to 0 dB relative to the loudest band. v3 used their mean (-4.1). v4 uses the top of that real range (`SUB_RULE = "max"` in `derive_targets.py`), so sub is now the loudest band.
+- **Chisel:** the quarry strikes' low content is 27 dB above the pre-strike background (a real stone thump, not ambience). In the first 150 ms their balance (sub/low/lowmid/mid/high) is -17.2 / -4.3 / -3.8 / -2.7 / 0 dB, and it decays at -209.5 dB/s.
+  - v3 had low at -41.6 dB: the missing body.
+  - v4 adds a body layer with those measured levels and decay rate, fitted with `tools/fit_body.py`.
+
+**4. Spectral smoothness.**
+
+- The thunder moved from 5 hard bands to 10 roughly octave-wide sub-bands, with the measured envelopes interpolated in dB/Hz across log frequency.
+- Ripple (std of the 1/12-octave spectrum around a cubic fit, 150 Hz-6 kHz): ref 1.26-4.21 dB; **v3 4.77** (max 9.7 dB near 1.5 kHz, the stepped region); **v4 1.85** (max 4.7 dB).
+- A first edge-step metric I tried conflated steep smooth tilt with steps, so I replaced it with ripple.
+
+**Comparison** (`/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/audio-v3-vs-v4.png` and `.json`; band envelopes against the reference in `/Users/fkchang/work/entreprenural_ideas/rmv/motion/sting/out/audio-compare.png`):
+
+| Metric | reference | v3 | v4 |
+|---|---|---|---|
+| Thunder EDT 63 / 125 / 250 / 500 / 1k (s) | 3.48 / 3.76 / 2.60 / 2.65 / 2.06 | 4.46 / 1.91 / 1.78 / 2.42 / 2.40 | 3.59 / 4.29 / 3.03 / 2.61 / 2.51 |
+| Thunder balance sub/low/lowmid/mid/high (dB) | 744723: -12.1/-1.8/0/-16.2/-51.8; 476739: 0/-2.2/-9.0/-20.3/-34.5 | -4.1/0/-2.5/-15.7/-40.7 | 0/-2.0/-4.5/-18.2/-43.2 |
+| Thunder spectral ripple std / max (dB) | 1.26-4.21 / 2.9-7.7 | 4.77 / 9.7 | 1.85 / 4.7 |
+| Chisel strike balance sub/low/lowmid/mid/high (dB) | -17.2/-4.3/-3.8/-2.7/0 | about -49/-42/-15/0/-4 | -16.8/-4.8/-4.8/0/-4.4 |
+| Chisel 500 Hz EDT (s) | 0.36 | 0.23 | 0.36 |
+
+- Remaining mismatches: thunder EDT at 125/250 Hz runs 0.4-0.5 s long, and the chisel's mid and high bands are swapped by about 3-4 dB.
+
+**Deliveries** (video re-muxed from the same approved masters):
+
+| file | integrated | true peak | frames | profile |
+|---|---|---|---|---|
+| 16x9 | -23.0 LUFS | -6.6 dBFS | 120 | h264 High, bt709, 30/1, AAC-LC, 4.000 s |
+| 9x16 | -23.0 LUFS | -6.6 dBFS | 120 | same |
+| 1x1 | -23.0 LUFS | -6.6 dBFS | 120 | same |
+
+- `npm test`: all three safe-zone checks ok.
+- The chisel's max momentary is 19 LU under the thunder's (-36.7 against -17.7 LUFS).
+- The reverb tails end inside the 4.0 s duration: the master fades to zero by 3.92 s.
+
+**Not gated:** whether the space and bass now read as natural rather than 8-bit is Forrest's call. If it still does:
+
+- The next candidates are the long thunder EDT at 125/250 Hz and the 20 Hz flicker modulation. The flicker is a random-step AM, and that texture is close to the NES noise channel.
+- The flicker std matches the reference, but its *spectrum*, the rate of change, was not measured.
+
+**Handoff:**
+
+- Play `/Users/fkchang/work/entreprenural_ideas/rmv/motion/deliver/rmw-seal-sting-16x9.mp4` on headphones and on a phone.
+- A/B sources: `out/thunder-v1.wav`, `thunder-v2.wav` and `thunder-v3.wav` against `out/thunder.wav`.
+
+Status stays in_progress.
+
+### Coordinator verification of v4 (tick sync + reverb/bass) (2026-09-28)
+
+- **Deliveries:** re-ran `ffprobe`/`ebur128` independently on all three — all
+  4.000000s, 30fps (confirms the fps-mismatch bug fix), -23.0 LUFS, -6.6 dBTP.
+  Matches the report exactly.
+- **Tick timing:** `silencedetect` on 16:9 shows silence 0-1.067s (matching the
+  first tick's corrected landing time exactly), then a short gap and silence
+  1.885-2.003s (~0.118s, matching the reported "100ms before the hit" — the
+  compression from 200ms is explained by the last character now landing later,
+  at 1.733s), then a decaying tail that reaches silence again by 3.907s (before
+  the 4.0s cutoff — confirms the reverb tail doesn't clip).
+- **Quantitative improvement:** viewed `audio-v3-vs-v4.png` directly — v4 (red)
+  visibly tracks the reference decay curves far more closely than v3
+  (blue/purple) across all four measured panels (early decay per octave, band
+  balance, spectral ripple, chisel strike balance). The spectral-ripple panel
+  in particular shows v4's bars close to reference height where v3's were
+  roughly double — a real, visible reduction in the "stepped" quality.
+- Builder's own honesty about remaining gaps (125/250Hz thunder decay running
+  long, the unmeasured flicker rate, mid/high chisel bands swapped ~3-4dB) is
+  recorded as-is — no reason to doubt it, and it's exactly the kind of
+  known-limitation disclosure this build has been consistent about throughout.
+
+Bringing this to Forrest now for another listen.
+
