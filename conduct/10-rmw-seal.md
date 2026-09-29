@@ -1,6 +1,6 @@
 # 10 — First RMW piece: seal sting
 
-Status: in_progress
+Status: done
 Output location (Forrest, 2026-09-28): inside the rmv project, at
 `/Users/fkchang/work/entreprenural_ideas/rmv/motion/` (new directory, sibling
 to `docs/`, `chatgpt_artifacts/`, `prototype/` — no existing `brand/` or
@@ -571,3 +571,10 @@ Status stays in_progress.
 
 Bringing this to Forrest now for another listen.
 
+
+### Final approval (2026-09-28)
+
+Forrest, on v4: "that will work for now." All three acceptance criteria met
+(render in three formats: confirmed; loudness/safe-zone: confirmed
+independently; Forrest's approval of both the seal art and the sting: given).
+Row 10 is the last task in the build. All ten rows are now done.
