@@ -9,9 +9,12 @@ specifics. Personal behavior layers on through local overlay files that each ski
 |---|---|---|
 | `lean-coordinator` | `fable-lean`, `opus-lean` | Model-tier coordinator discipline: keep the frontier main thread lean, gate delegation, tune effort, escalate on evidence (Advisor pattern), offload cross-vendor |
 | `motion-skills` | `motion-studio`, `motion-craft`, `motion-render`, `motion-sound`, `social-video-delivery` | Code-driven motion design: a parametrized rendering toolkit (versioned template directory), platform delivery presets, animation-principle recipes, sound, and a budget-guarded studio workflow |
+| `readme-glowup` | `readme-glowup` | Edgy, shareable READMEs: study sibling style, pitch hero image and tagline, generate the image (Codex), write the README, scrub personal data before going public |
 
 `lean-coordinator` reads `~/.claude/lean-overlay.md` if present for your budget, owned accounts,
 routing table and measurement hook.
+
+`readme-glowup` reads `~/.claude/readme-glowup-overlay.md` if present for sibling repos, character, palette rule and image route.
 
 `motion-skills` reads `~/.claude/motion-overlay.md` if present for your brand kits, spend
 thresholds, and output locations (schema: `plugins/motion-skills/skills/motion-studio/motion-overlay.example.md`).

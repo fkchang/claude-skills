@@ -1,6 +1,8 @@
 {
   "name": "claude-skills",
-  "owner": { "name": "Forrest Chang" },
+  "owner": {
+    "name": "Forrest Chang"
+  },
   "plugins": [
     {
       "name": "lean-coordinator",
@@ -11,6 +13,11 @@
       "name": "motion-skills",
       "source": "./plugins/motion-skills",
       "description": "Code-driven motion design toolkit and skills: parametrized rendering engine, platform delivery presets, animation-principle recipes, sound, and a budget-guarded studio workflow."
+    },
+    {
+      "name": "readme-glowup",
+      "source": "./plugins/readme-glowup",
+      "description": "Give a repo an edgy README: study sibling style, pitch hero image and tagline, generate the image, write the README, scrub personal data."
     }
   ]
 }

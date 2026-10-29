@@ -1,0 +1,7 @@
+{
+  "name": "readme-glowup",
+  "version": "0.1.0",
+  "description": "Give a repo an edgy, shareable README: study sibling READMEs for house style, pitch a hero image and tagline, generate the image, write the README, scrub personal data before going public.",
+  "author": { "name": "Forrest Chang" },
+  "license": "MIT"
+}
